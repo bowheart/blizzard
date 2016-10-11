@@ -4,27 +4,29 @@ ini_set('display_errors', 1);
 
 use core\Router;
 
-
-function autoload($class, $type) {
+/**
+ * For, e.g. $class="core\Router", $path="vessels"
+ */
+function autoload($class, $typePrefix) {
 	$pieces = explode('\\', $class);
+	
+	// Look for 'vessels/core/Router.php'
+	$path = $typePrefix . implode('/', $pieces) . '.php';
+	if (file_exists($path)) return require_once $path;
+	
+	// Look for 'vessels/core/router/Router.php'
 	$classFile = array_pop($pieces);
-	
-	$pieces[] = substr(preg_replace('([A-Z])', '-$0', $classFile), 1); // Pascal to dash (e.g. MyFile -> my-file
-	$pieces = array_map('strtolower', $pieces); // make all the pieces lower-case
-	
-	if ($type === 'nodes') array_shift($pieces); // get rid of the 'nodes' piece
-	
-	$path = "$type/" . implode($pieces, '/' . $type . '/') . "/$classFile.php";
-	
-	if (file_exists($path)) require_once $path;
-};
+	$pieces[] = strtolower(substr(preg_replace('([A-Z])', '-$0', $classFile), 1)); // Pascal to dash (e.g. MyFile -> my-file
+	$path = $typePrefix . implode('/', $pieces) . "/$classFile.php";
+	if (file_exists($path)) return require_once $path;
+}
 
 
 /**
  * The autoloader for vessels.
  */
 spl_autoload_register(function($class) {
-	autoload($class, 'vessels');
+	autoload($class, 'vessels/');
 });
 
 
@@ -32,8 +34,15 @@ spl_autoload_register(function($class) {
  * The autoloader for nodes.
  */
 spl_autoload_register(function($class) {
-	autoload($class, 'nodes');
+	autoload($class, '');
 });
 
 
+/**
+ * The autoloader for composer packages.
+ */
+require_once 'vendor/autoload.php';
+
+
+parse_str(implode('&', array_slice(isset($argv) ? $argv : [], 1)), $_GET);
 Router::route();

@@ -2,7 +2,7 @@
 
 namespace nodes;
 
-use Node;
+use core\models\Node;
 
 class NotFound extends Node {
 	public function main() { ?>

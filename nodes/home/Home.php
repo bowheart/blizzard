@@ -2,8 +2,10 @@
 
 namespace nodes;
 
-use Node;
+use core\models\Node;
 
 class Home extends Node {
-	public function main() {}
+	public function main() {
+		
+	}
 }

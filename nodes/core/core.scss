@@ -1,0 +1,351 @@
+@import 'https://fonts.googleapis.com/css?family=Open+Sans:400,700,300';
+
+// Variables / Functions / Setup-type-stuff
+
+@mixin pseudo-effects($color) {
+	&:hover, &:focus {
+		background: darken($color, 5%);
+	}
+	&:active {
+		background: darken($color, 10%);
+	}
+}
+
+
+
+
+// CSS Reset (of sorts)
+
+* {
+	box-sizing: border-box;
+	line-height: 1.45;
+}
+
+html {
+	font-size: $baseRootFontSize;
+	
+	$rootFontSizePieceSize: ($baseRootFontSize - $smallestRootFontSize) / length($mqs);
+	@each $mq in $mqs {
+		$i: index($mqs, $mq);
+		
+		@media (max-width: $mq) {
+			font-size: $baseRootFontSize - $rootFontSizePieceSize * $i;
+		}
+	}
+}
+
+body {
+	color: nth($greys, 1);
+	font-family: nth($fonts, 1);
+	font-size: 1.5rem;
+	margin: 0;
+}
+
+
+
+// Alphabetized selectors
+a {
+	color: nth($text-colors, 1);
+	text-decoration: none;
+	
+	&:hover {
+		color: darken(nth($text-colors, 1), 10%);
+	}
+}
+
+article, figure, footer, header, main, section {
+	display: block;
+}
+
+button {
+	background: #fff;
+	border: 1px solid nth($greys, 4);
+	cursor: pointer;
+	font-size: 1.5rem;
+	padding: 0.4em 0.7em;
+	@include pseudo-effects(#fff);
+	
+	@each $color in $colors {
+		$i: index($colors, $color);
+		
+		&.btn-#{$i} {
+			background: $color;
+			border: none;
+			color: #fff;
+			@include pseudo-effects($color);
+		}
+	}
+	
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 400;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+h1 { font-size: 6rem; }
+h2 { font-size: 5.2rem; }
+h3 { font-size: 4.4rem; }
+h4 { font-size: 3.6rem; }
+h5 { font-size: 2.8rem; }
+h6 { font-size: 2rem; }
+
+input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="file"]) {
+	border: 1px solid #ddd;
+	border-radius: 2px;
+	font-size: 1.5rem;
+	padding: 0.3rem 0.6rem;
+	vertical-align: middle;
+	
+	&:focus {
+		border: 1px solid #3cf;
+		box-shadow: 0 0 3px #3cf, inset 0 0 1px #3cf;
+	}
+}
+
+ol, ul {
+	list-style-position: inside;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-left: 0;
+}
+
+p {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+ul {
+	list-style-type: none;
+}
+
+
+
+// Basic Layout Classes
+@for $i from 1 through 10 {
+	.push-#{$i} {
+		margin: #{$i / 2}rem;
+	}
+	.push-col-#{$i} {
+		margin-right: #{$i / 2}rem;
+		margin-left: #{$i / 2}rem;
+	}
+	.push-row-#{$i} {
+		margin-top: #{$i / 2}rem;
+		margin-bottom: #{$i / 2}rem;
+	}
+	.push-top-#{$i} {
+		margin-top: #{$i / 2}rem;
+	}
+	.push-right-#{$i} {
+		margin-right: #{$i / 2}rem;
+	}
+	.push-bottom-#{$i} {
+		margin-bottom: #{$i / 2}rem;
+	}
+	.push-left-#{$i} {
+		margin-left: #{$i / 2}rem;
+	}
+	
+	
+	.container-#{$i} {
+		margin-right: auto;
+		margin-left: auto;
+		max-width: 100%;
+		width: #{$i * 20}rem;
+	}
+	
+	
+	.pad-#{$i} {
+		padding: #{$i / 2}rem;
+	}
+	.pad-col-#{$i} {
+		padding-left: #{$i / 2}rem;
+		padding-right: #{$i / 2}rem;
+	}
+	.pad-row-#{$i} {
+		padding-top: #{$i / 2}rem;
+		padding-bottom: #{$i / 2}rem;
+	}
+	.pad-top-#{$i} {
+		padding-top: #{$i / 2}rem;
+	}
+	.pad-right-#{$i} {
+		padding-right: #{$i / 2}rem;
+	}
+	.pad-bottom-#{$i} {
+		padding-bottom: #{$i / 2}rem;
+	}
+	.pad-left-#{$i} {
+		padding-left: #{$i / 2}rem;
+	}
+	
+	
+	.modal-#{$i} {
+		border-radius: 10px;
+		max-width: 100%;
+		width: #{$i * 20}rem;
+	}
+	
+	.text-#{$i} {
+		font-size: 0.6rem * $i;
+	}
+}
+
+
+
+// The Grid
+.row {
+	letter-spacing: -1em;
+	
+	> *:not(.row) {
+		letter-spacing: 0;
+	}
+}
+
+$oneTwentyFourth: 100 / 24;
+@each $mq in $mqs {
+	$i: index($mqs, $mq);
+	$mq: nth($mqs, length($mqs) - $i + 1);
+	
+	@for $j from 24 through 1 {
+		.col-#{$i}-#{$j} {
+			@media (min-width: $mq + 1) {
+				display: inline-block;
+				vertical-align: top;
+				// width: $oneTwentyFourth * ($j + 0%;
+				width: #{$oneTwentyFourth * $j + 0%};
+			}
+		}
+	}
+}
+
+
+
+// Utility Classes
+@each $mq in $mqs {
+	$i: index($mqs, $mq);
+	
+	.size-#{$i} {
+		@media (max-width: $mq) {
+			display: none;
+		}
+	}
+}
+
+@each $color in $colors {
+	$i: index($colors, $color);
+	
+	.bg-#{$i} {
+		background: $color;
+		color: #fff;
+	}
+	.color-#{$i} {
+		color: $color;
+	}
+}
+
+@each $grey in $greys {
+	$i: index($greys, $grey);
+	
+	.bg-grey-#{$i} {
+		background: $grey;
+	}
+	.text-#{$i} {
+		color: $grey;
+	}
+}
+
+.inline {
+	display: inline-block;
+}
+
+.input {
+	display: block;
+	width: 100%;
+}
+
+.input-group {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	text-align: right;
+	
+	> label, > input {
+		vertical-align: middle;
+	}
+}
+
+.list-inline {
+	> li {
+		display: inline-block;
+	}
+}
+
+.modal-wrapper {
+	position: fixed;
+	top: 0;
+	left: 0;
+	text-align: center;
+	height: 100%;
+	width: 100%;
+	
+	&::before {
+		background: rgba(0, 0, 0, 0.3);
+		content: '';
+		position: absolute;
+		top: -100%;
+		left: -100%;
+		height: 300%;
+		width: 300%;
+	}
+	
+	&::after {
+		content: '';
+		display: inline-block;
+		height: 100%;
+		vertical-align: middle;
+	}
+	
+	> [class|="modal"] {
+		background: #fff;
+		display: inline-block;
+		position: relative;
+		vertical-align: middle;
+	}
+	
+	.modal-head, .modal-body, .modal-foot {
+		padding: 1.5rem;
+	}
+	.modal-head {
+		text-align: center;
+	}
+	.modal-foot {
+		text-align: right;
+	}
+}
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.v-align {
+	vertical-align: middle;
+	
+	~ * {
+		vertical-align: middle;
+	}
+}
+
+.v-align-content {
+	> * {
+		display: inline-block;
+		vertical-align: middle;
+	}
+	
+	&::after {
+		content: '';
+		display: inline-block;
+		vertical-align: middle;
+		height: 100%;
+	}
+}

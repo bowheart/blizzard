@@ -3,73 +3,47 @@
 use core\Response;
 
 class Core {
-	public static function assert($thing, $error = 'Unspecified error encountered') {
-		if (!empty($thing)) return true;
-		Response::error($error);
-	}
-	public static function assertArray($thing, $verbose = false) {
-		if (is_array($thing)) return true;
-		Response::error($verbose ? 'Parameter for ' . static::getCallingFunction() . ' must be an array' : null);
-	}
-	public static function assertFile($file) {
-		if (file_exists($file)) return true;
-		Response::notFound();
-	}
-	public static function assertString($thing, $verbose = false) {
-		if (is_string($thing)) return true;
-		Response::error($verbose ? 'Parameter for ' . static::getCallingFunction() . ' must be a string' : null);
+	public static function assertCallable($thing) {
+		if (is_callable($thing)) return true;
+		throw new Exception('Parameter for "' . static::caller() . '()" must be callable.');
 	}
 	
+	public static function caller() {
+		$info = debug_backtrace()[2];
+		return $info['class'] . $info['type'] . $info['function'];
+	}
 	
 	public static function dashToCamel($str) {
 		return preg_replace_callback('/-(.)/', function($matches) { return strtoupper($matches[1]); }, $str);
 	}
+	
 	public static function dashToPascal($str) {
 		return ucfirst(static::dashToCamel($str));
 	}
 	
-	
-	public static function defaultVal($val1, $val2) {
-		return $val1 ? $val1 : $val2;
+	public static function defaultTo($val1, $val2 = null) {
+		return $val1 ?: $val2;
 	}
 	
-	
-	public static function ensureDir($dir) {
-		if (is_string($dir)) $dir = explode('/', $dir);
-		
+	public static function ensureDir($nodes, $dropLastNode = false) {
+		if (is_string($nodes)) $nodes = explode('/', $nodes);
+		if ($dropLastNode) array_pop($nodes);
 		$path = '';
-		foreach ($dir as $nextNode) {
-			$path = Core::join($path, $nextNode);
-			if (file_exists($path)) continue;
-			
-			mkdir($path);
+		
+		foreach ($nodes as $node) {
+			$path = Core::join($path, $node);
+			if (!file_exists($path)) mkdir($path);
 		}
-		return true;
 	}
-	
-	
-	public static function getCallingFunction() {
-		return debug_backtrace()[2]['function'];
-	}
-	
 	
 	public static function join() {
 		$paths = array();
-		
 		foreach (func_get_args() as $arg) {
-			if ($arg !== '' and is_string($arg)) $paths[] = $arg;
+			if ($arg && is_string($arg)) $paths[] = $arg;
+			else if (is_array($arg)) $paths = array_merge($paths, $arg);
 		}
-		return preg_replace('#/+#','/', implode('/', $paths));
+		return preg_replace('#/+#', '/', implode('/', $paths));
 	}
-	
-	
-	public static function page($name, $isCorePage) {
-		$path = static::join($isCorePage ? 'blizzard' : '', 'pages', $name, 'page.php');
-		static::assertFile($path);
-		
-		require $path;
-	}
-	
 	
 	public static function parseJsonFile($file) {
 		if (!$file) return $file;
@@ -78,43 +52,35 @@ class Core {
 		return $json;
 	}
 	
-	
-	public static function parseModel($data) {
-		if (is_object($data) && method_exists($data, 'toJSON')) return $data->toJSON();
-		return $data;
-	}
-	
-	
-	public static function plugin($name) {
-		$path = static::join('vendor', $name . '.php');
-		static::assertFile($path);
-		
-		require_once $path;
-	}
-	
-	
 	public static function readdir($dir) {
 		if (!file_exists($dir)) return [];
 		return array_diff(scandir($dir), ['.', '..']);
 	}
 	
-	
-	public static function spiderLoad($dir) {
-		$contents = static::readdir($dir);
-		foreach ($contents as $file) {
-			$path = $dir . DIRECTORY_SEPARATOR . $file;
-			if (is_dir($path)) {
-				static::spiderLoad($path);
+	public static function spider($dir, $modify, $spiderCondition = null) {
+		static::assertCallable($modify);
+		
+		if (!is_callable($spiderCondition)) {
+			$spiderCondition = function($filePath, $file, $dir) {
+				return true;
+			};
+		}
+		
+		$files = static::readdir($dir);
+		foreach ($files as $file) {
+			$filePath = static::join($dir, $file);
+			if (is_dir($filePath) && $spiderCondition($filePath, $file, $dir)) {
+				static::spider($filePath, $modify, $spiderCondition);
 				continue;
 			}
-			require_once $path;
+			$modify($filePath, $file, $dir);
 		}
 	}
 	
-	
-	public static function toArray($thing) {
-		if (!$thing || is_array($thing)) return $thing;
-		if (is_string($thing)) return [$thing];
-		if (is_object($thing)) return get_object_vars($thing);
+	public static function writeFile($file, $contents) {
+		$nodes = explode('/', $file);
+		static::ensureDir($nodes, true);
+		
+		file_put_contents($file, $contents);
 	}
 }

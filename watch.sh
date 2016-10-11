@@ -1,2 +1,2 @@
 #!/bin/bash
-nodemon -w modules -w nodes -e scss -x curl http://blizzard/compile
+nodemon -w modules -w nodes -e scss -x php -f start.php uri=compile

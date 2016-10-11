@@ -11,20 +11,24 @@ class Request {
 	private static $method;
 	private static $data;
 	
-	public static function init() {
-		static::$uri = substr($_SERVER['REQUEST_URI'], 1);
-		if (strpos(static::$uri, '?')) static::$uri = substr(0, strpos(static::$uri, '?'));
+	public static function init($uri = '', $method = '') {
+		if (empty($uri)) $uri = substr($_SERVER['REQUEST_URI'], 1);
+		if (strpos($uri, '?')) $uri = substr($uri, 0, strpos($uri, '?'));
 		
-		$uri = static::$uri;
+		static::$uri = $uri;
 		static::$uriNodes = array_filter(explode('/', $uri));
 		static::$nodes = array_filter(explode('/', $uri));
-		static::$method = $_SERVER['REQUEST_METHOD'];
 		
-		static::$data = $_GET + $_POST + Core::defaultVal(Core::toArray(json_decode(file_get_contents('php://input'))), []);
+		if (empty($method)) $method = $_SERVER['REQUEST_METHOD'];
+		static::$method = $method;
+		
+		static::$data = $_GET + $_POST + Core::defaultVal(json_decode(file_get_contents('php://input'), true), []);
 	}
 	
 	public static function all() {
-		return static::$nodes;
+		$all = static::$nodes;
+		static::$nodes = [];
+		return $all;
 	}
 	
 	public static function data($key = null) {
@@ -44,6 +48,14 @@ class Request {
 	
 	public static function nodes() {
 		return static::$uriNodes;
+	}
+	
+	public static function push($node) {
+		return static::$nodes[] = $node;
+	}
+	
+	public static function unshift($node) {
+		return array_unshift(static::$nodes, $node);
 	}
 	
 	public static function uri() {

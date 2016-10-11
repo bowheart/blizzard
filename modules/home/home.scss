@@ -1,0 +1,14 @@
+@import 'config';
+
+#page.home {
+	.box {
+		border-radius: 8px;
+		box-shadow: 0 0 3px 1px nth($colors, 2);
+		height: 50rem;
+		text-align: center;
+	}
+	
+	.home-bottom {
+		border-top: 1px solid nth($greys, 4);
+	}
+}

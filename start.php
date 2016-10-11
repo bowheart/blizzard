@@ -14,7 +14,7 @@ function autoload($class, $type) {
 	
 	if ($type === 'nodes') array_shift($pieces); // get rid of the 'nodes' piece
 	
-	$path = "$type/" . implode($pieces, '/vessels/') . "/$classFile.php";
+	$path = "$type/" . implode($pieces, '/' . $type . '/') . "/$classFile.php";
 	
 	if (file_exists($path)) require_once $path;
 };

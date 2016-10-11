@@ -1,0 +1,35 @@
+@import 'config';
+
+body {
+	background: #f3f3f3;
+}
+
+body > header {
+	height: $header-height;
+	text-align: center;
+	
+	h1 {
+		font-size: 4rem;
+	}
+}
+
+body > nav {
+	border-top: 1px solid nth($colors, 2);
+	border-bottom: 1px solid nth($colors, 2);
+	height: $nav-height;
+	text-align: center;
+	
+	a {
+		line-height: $nav-height;
+		padding: 0 2rem;
+	}
+}
+
+body > main {
+	min-height: calc(100vh - #{$header-height} - #{$nav-height} - #{$footer-height});
+}
+
+body > footer {
+	background: nth($colors, 2);
+	height: $footer-height;
+}

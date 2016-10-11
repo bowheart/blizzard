@@ -1,9 +1,11 @@
 <?php
 
+use core\Response;
+
 class Core {
-	public static function assert($thing, $verbose = false) {
+	public static function assert($thing, $error = 'Unspecified error encountered') {
 		if (!empty($thing)) return true;
-		Response::error($verbose ? 'Parameter for ' . static::getCallingFunction() . ' must be set' : null);
+		Response::error($error);
 	}
 	public static function assertArray($thing, $verbose = false) {
 		if (is_array($thing)) return true;
@@ -33,9 +35,15 @@ class Core {
 	
 	
 	public static function ensureDir($dir) {
-		if (file_exists($dir)) return true;
+		if (is_string($dir)) $dir = explode('/', $dir);
 		
-		mkdir($dir);
+		$path = '';
+		foreach ($dir as $nextNode) {
+			$path = Core::join($path, $nextNode);
+			if (file_exists($path)) continue;
+			
+			mkdir($path);
+		}
 		return true;
 	}
 	

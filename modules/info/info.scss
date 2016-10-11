@@ -1,0 +1,14 @@
+@import 'config';
+
+#page.info {
+	.info-nav {
+		border-bottom: 1px solid nth($colors, 2);
+		height: $nav-height;
+		text-align: center;
+		
+		a {
+			line-height: $nav-height;
+			padding: 0 20px;
+		}
+	}
+}

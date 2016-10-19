@@ -7,18 +7,50 @@ use core\models\Node;
 use Leafo\ScssPhp\Compiler;
 
 class Cache extends Node {
-	private $appFiles = [];
+	private $apps = [];
+	private $moduleDirs = [];
 	private $moduleMap = [];
+	private $toCompile = [];
+	private $sassCompiler;
 	
+	/*
+	 * The Process:
+	 * 
+	 * Spider through the modules folder, finding all js and sass files
+	 *   For .js files:
+	 *     Map all mithril-x modules to the file they were defined in and their dependencies ($this->moduleMap)
+	 *     Copy all files to the resources/js directory (location dependent on dir and filename of file)
+	 *   For .scss files:
+	 *     Add directories containing files starting with an '_' to the compiler import paths.
+	 *     Keep track of all other sass files (add them to the $this->toCompile list)
+	 * 
+	 * Spider through the nodes folder. Same thing, but don't copy the .js files to resources/js
+	 * 
+	 * When spidering is done, go through the list of sass files toCompile. For each one:
+	 *   Compile and output to resources/css directory (location dependent on dir and filename of file)
+	 *   Map all modules defined in the same directory of a sass file to the resulting css file url (in $this->moduleMap)
+	 */
 	public function main() {
+		$this->css('core');
+		
+		$this->sassCompiler = new Compiler();
+		$this->sassCompiler->setFormatter('Leafo\\ScssPhp\\Formatter\\Crunched');
 		echo '<h4>Generating cache...</h4>';
 		
 		$this->createModuleMap();
-		//$this->spider('nodes');
+		$this->compileSass();
 		
-		var_dump($this->appFiles);
-		
-//		echo '<h4>Cache generated successfully. Apps found: ' . count($this->appFiles) . '</h4><ul><li>' . implode('</li><li>', $this->appFiles) . '</li></ul>';
+		$moduleMap = ['apps' => $this->apps, 'modules' => $this->moduleMap];
+		Core::writeFile(Core::join('resources', 'vessel-cache', 'module-map.json'), json_encode($moduleMap));
+		?>
+		<h2>Cache generated successfully.</h2>
+		<h4>Apps found: <?= count($this->apps) ?></h4>
+		<ul><li><?= implode('</li><li>', array_keys($this->apps)) ?></li></ul>
+		<h4>Modules found: <?= count($this->moduleMap) ?></h4>
+		<ul><li><?= implode('</li><li>', array_keys($this->moduleMap)) ?></li></ul>
+		<h4>Sass files compiled: <?= count($this->toCompile) ?></h4>
+		<ul><li><?= implode('</li><li>', array_keys($this->toCompile)) ?></li></ul>
+		<?php
 	}
 	
 	/*
@@ -29,84 +61,58 @@ class Cache extends Node {
 			modules/core/other/other.js -> resources/js/core/other.js
 	*/
 	private function createModuleMap() {
-		Core::spider('modules', function($filePath, $file, $dir) {
+		Core::spider(['modules', 'nodes'], function($filePath, $file, $dir) {
+			
 			// we only want .js and .scss files
 			if (substr($file, -3) === '.js') {
 				$this->mapJsFile($filePath, $file, $dir);
 			} else if (substr($file, -5) === '.scss') {
-				$this->mapSassFile($filePath, $file, $dir);
+				$this->trackSassFile($filePath, $file, $dir);
 			}
 		});
 	}
-	private function unwrapQuotes($string) {
-		$matches = [];
-		preg_match_all('/"(.*?)"|\'(.*?)\'/', $string, $matches);
-		$captures = $matches[2];
-		return $captures;
-	}
 	
 	
-	private function spider($path) {
-		$files = Core::readdir($path);
-		foreach ($files as $file) {
-			$filePath = Core::join($path, $file);
-			
-			if (is_dir($filePath)) {
-				$this->spider($filePath);
-				continue;
-			}
-			
-			if (strpos($file, 'app.js') !== false) $this->cacheApp($filePath);
-		}
-	}
-	
-	private function cacheApp($filePath) {
-		$this->appFiles[] = $filePath;
-		
-		ob_start();
-		$jsFiles = [];
-		$cssFiles = ['nodes/core/_config.scss', 'nodes/core/core.scss', 'nodes/core/custom.scss'];
-		$this->moduleDeps($filePath, $jsFiles, $cssFiles);
-		$content = ob_get_contents();
-		ob_end_clean();
-		
-		// Write the js to a file.
-		Core::writeFile(Core::join('resources', 'js', substr($filePath, 6)), $content);
-		
-		// Compile the sass and write the resulting css to a file.
-		$filePath = substr($filePath, 0, -3) . '.css';
-		$sass = '';
-		foreach ($cssFiles as $cssFile) {
-			$sass .= file_get_contents($cssFile);
-		}
-		$compiler = new Compiler();
-		$compiler->setFormatter('Leafo\\ScssPhp\\Formatter\\Crunched');
-		$css = $compiler->compile($sass);
-		Core::writeFile(Core::join('resources', 'css', substr($filePath, 6)), $css);
-	}
 	
 	// For, e.g., 'modules/core/base/base.js'
 	private function cacheJs($filePath, $file, $dir) {
-		$filename = substr($file, 0, strrpos($file, '.'));
-		$dirNodes = explode('/', $dir);
-		array_shift($dirNodes); // get rid of the 'modules' node
-		$lastNode = end($dirNodes);
-		if ($filename === $lastNode) array_pop($dirNodes); // turn 'core/base/base.js' into 'core/base.js'
+		$dirNodes = $this->normalizePath($file, $dir);
 		
-		$urlPath = Core::join('js', $dirNodes, $file); // find the web-facing path (this would go in a script's `src` attribute)-- 'js/core/base.js'
-		
-		$cacheFilePath = Core::join('resources', 'js', $dirNodes, $file);
+		$cacheFilePath = Core::join('resources', $dirNodes, $file);
 		Core::writeFile($cacheFilePath, file_get_contents($filePath));
 		
+		array_shift($dirNodes);
+		$urlPath = Core::join('js', $dirNodes, $file); // find the web-facing path (this would go in a script's `src` attribute)-- 'js/core/base.js'
 		return $urlPath;
 	}
 	
-	private function cacheSass($filePath) {
+	// For, e.g., 'modules/core/base/base.scss'
+	private function cacheSass($filePath, $file, $dir) {
+		$dirNodes = $this->normalizePath($file, $dir);
+		$cssFile = substr($file, 0, strpos($file, '.')) . '.css';
 		
+		$cacheFilePath = Core::join('resources', $dirNodes, $cssFile);
+		$sass = file_get_contents($filePath);
+		try {
+			$compiled = $this->sassCompiler->compile($sass);
+			Core::writeFile($cacheFilePath, $compiled);
+		} catch (\Exception $exception) {
+			echo '<p>Unable to compile sass file "' . $filePath . '". Message: ' . $exception->getMessage() . '</p>';
+		}
+		
+		array_shift($dirNodes);
+		$urlPath = Core::join('css', $dirNodes, $cssFile); // find the web-facing path (this would go in a link's 'href' attribute)-- 'css/core/base.css'
+		return $urlPath;
 	}
 	
+	
+	
 	private function mapJsFile($filePath, $file, $dir) {
-		$fileUrl = $this->cacheJs($filePath, $file, $dir);
+		$isNodeFile = substr($filePath, 0, 6) === 'nodes/'; 
+		$fileUrl = ($isNodeFile
+			? substr($filePath, 6)
+			: $this->cacheJs($filePath, $file, $dir));
+		
 		$contents = file_get_contents($filePath);
 		
 		$matches = [];
@@ -117,101 +123,72 @@ class Cache extends Node {
 			$deps = $this->unwrapQuotes($moduleDef);
 			$name = array_shift($deps);
 			if (is_null($name)) return; // No modules detected in this file.
-			if (array_key_exists($name, $this->appFiles)) throw new \Exception('Multiple modules found with name "' . $name . '". File: ' . $filePath);
+			if (array_key_exists($name, $this->moduleMap)) throw new \Exception('Multiple modules found with name "' . $name . '". File: ' . $filePath);
 			
-			$this->appFiles[$name] = ['file' => $fileUrl, 'deps' => $deps];
+			if ($name === 'app' || substr($name, '-4') === '-app') { // 'app' and 'whatever-app' indicate an app-type module
+				$this->apps[$fileUrl] = $deps;
+				continue;
+			}
+			if (!$isNodeFile) $this->addModuleDir($dir, $name);
+			$this->moduleMap[$name] = ['file' => $fileUrl, 'deps' => $deps, 'css' => []]; // the css will get set after all spidering is done.
 		}
 	}
 	
-	private function mapSassFile($filePath, $file, $dir) {
+	private function trackSassFile($filePath, $file, $dir) {
+		if ($file[0] === '_') return $this->sassCompiler->addImportPath($dir);
 		
+		$this->toCompile[$filePath] = compact('file', 'dir');
 	}
 	
-	// Recursively find the dependency tree of the given mithril-x module (should start with an app-type module).
-	private function moduleTree($module, &$jsFiles, &$cssFiles) {
-		$file = $this->findJsFile($module);
-		if (!$file) return;
-		
-		$this->loadAssets(dirname($file), $cssFiles);
-		
-		$jsFiles[] = $module;
-		$this->moduleDeps($file, $jsFiles, $cssFiles);
-	}
 	
-	/**
-	 * For, e.g. $nodes="core/base.js"
-	 */
-	private static function findJsFile($nodes) {
-		if (is_string($nodes)) $nodes = explode('/', $nodes);
-		
-		// Look for 'modules/core/base.js'
-		$path = Core::join('modules', implode('/', $nodes));
-		
-		// Look for 'modules/core/base/base.js'
-		if (!file_exists($path)) {
-			$file = array_pop($nodes);
-			$splitFile = explode('.', $file);
-			$nodes[] = array_shift($splitFile);
-			$path = Core::join('modules', implode('/', $nodes), $file);
-			
-			if (!file_exists($path)) $path = null;
+	
+	
+	private function compileSass() {
+		foreach ($this->toCompile as $filePath => $data) {
+			$fileUrl = $this->cacheSass($filePath, $data['file'], $data['dir']);
+			$this->addCssDir($data['dir'], $fileUrl);
 		}
-		return $path;
 	}
 	
-	// Load all the assets for the module at ($modulePath)
-	private function loadAssets($modulePath, &$cssFiles) {
-		$files = array_merge(Core::readdir($modulePath), array_map(function($file) {
-			return Core::join('_assets', $file);
-		}, Core::readdir(Core::join($modulePath, '_assets'))));
+	
+	
+	
+	// = = = = = = = =   Helper Methods   = = = = = = = = //
+	
+	private function addCssDir($dir, $file) {
+		if (!isset($this->moduleDirs[$dir])) return; // no modules in this directory
 		
-		foreach ($files as $file) {
-			$filePath = Core::join($modulePath, $file);
+		foreach ($this->moduleDirs as $moduleDir => $modules) {
+			if (substr($moduleDir, 0, strlen($dir)) !== $dir) continue;
 			
-			if (is_dir($filePath)) continue; // ignore subfolders (submodules and whatnot)
-			
-			// It's a file. Look for .js and .scss files
-			$splitFile = explode('.', $file);
-			$ext = end($splitFile);
-			if ($ext !== 'js' && $ext !== 'scss') continue;
-			
-			// It's a .js or .scss file. Load it.
-			if ($ext === 'scss') {
-				if (substr($file, 0, 1) === '_') { // config sass files get priority (files starting with '_')
-					array_unshift($cssFiles, $filePath);
-					continue;
-				}
-				
-				$cssFiles[] = $filePath;
+			foreach ($modules as $module) {
+				$this->moduleMap[$module]['css'][] = $file;
 			}
 		}
 	}
+	private function addModuleDir($dir, $name) {
+		if (!isset($this->moduleDirs[$dir])) $this->moduleDirs[$dir] = [];
+		$this->moduleDirs[$dir][] = $name;
+	}
 	
-	private function moduleDeps($file, &$jsFiles, &$cssFiles) {
-		$contents = file_get_contents($file);
+	// For, e.g., 'modules/core/base/base.js'
+	private function normalizePath($file, $dir) {
+		$filename = substr($file, 0, strrpos($file, '.'));
+		$dirNodes = explode('/', $dir);
+		$firstNode = array_shift($dirNodes);
+		array_unshift($dirNodes, substr($firstNode, 0, -1). '-cache');
+		if ($firstNode === 'nodes') return $dirNodes; // skip the last bit for files in the 'nodes' folder
 		
-		echo $contents; // so it gets outputted by the buffer
+		$lastNode = end($dirNodes);
+		if ($filename === $lastNode) array_pop($dirNodes); // turn 'core/base/base.js' into 'core/base.js'
 		
-		$depLists = [];
-		preg_match_all('/m.define\(.*?, *(.*),.*?function/', $contents, $depLists);
-		$depLists = $depLists[1];
-		
-		foreach ($depLists as $list) {
-			$unwrapped = []; // unwrap from the array ("[]")
-			preg_match('/\[(.*)\]/', $list, $unwrapped);
-			$unwrapped = (array_key_exists(1, $unwrapped) ? $unwrapped[1] : $list);
-			
-			$list = explode(',', $unwrapped);
-			
-			foreach ($list as $item) {
-				$unwrapped = []; // unwrap from quotes
-				preg_match('/("|\')(.*)("|\')/', $item, $unwrapped);
-				$unwrapped = $unwrapped[2];
-				
-				$nextModule = preg_replace('/\./', '/', $unwrapped) . '.js';
-				if (in_array($nextModule, $jsFiles)) continue;
-				$this->moduleTree($nextModule, $jsFiles, $cssFiles);
-			}
-		}
+		return $dirNodes;
+	}
+	
+	private function unwrapQuotes($string) {
+		$matches = [];
+		preg_match_all('/"(.*?)"|\'(.*?)\'/', $string, $matches);
+		$captures = $matches[2];
+		return $captures;
 	}
 }

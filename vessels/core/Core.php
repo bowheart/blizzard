@@ -66,6 +66,13 @@ class Core {
 			};
 		}
 		
+		if (is_array($dir)) {
+			foreach ($dir as $_dir) {
+				static::spider($_dir, $modify, $spiderCondition);
+			}
+			return;
+		}
+		
 		$files = static::readdir($dir);
 		foreach ($files as $file) {
 			$filePath = static::join($dir, $file);

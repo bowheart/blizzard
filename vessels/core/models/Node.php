@@ -5,9 +5,12 @@ namespace core\models;
 use Core;
 use core\Router;
 use core\Request;
+use core\Response;
 
 class Node {
 	private $method;
+	private $cssFiles = [];
+	private $jsFiles = [];
 
 	
 	public function __construct() {
@@ -22,6 +25,36 @@ class Node {
 	
 	
 	protected function init() {} // No-op. Meant to be overridden.
+	
+	protected function app($file) {
+		$file = ($file[0] === '/' ? substr($file, 1) : Core::join($this->webPath(), $file));
+		
+		$moduleMap = file_get_contents(Core::join('resources', 'vessel-cache', 'module-map.json'));
+		$app = $moduleMap['apps'][$file];
+		print_r($app);
+	}
+	
+	protected function css() {
+		$files = func_get_args();
+		foreach ($files as $file) {
+			if (strpos($file, '//') === false) { // if it isn't an absolute path, add '.css' to it (if it doesn't have it)
+				$file = ($file[0] === '/' ? substr($file, 1) : Core::join($this->webPath(), $file));
+				if (substr($file, -4) !== '.css') $file .= '.css';
+			}
+			if (!in_array($file, $this->cssFiles)) $this->cssFiles[] = $file;
+		}
+	}
+	
+	protected function js() {
+		$files = func_get_args();
+		foreach ($files as $file) {
+			if (strpos($file, '//') === false) { // if it isn't an absolute path, add '.js' to it (if it doesn't have it)
+				$file = ($file[0] === '/' ? substr($file, 1) : Core::join($this->webPath(), $file));
+				if (substr($file, -3) !== '.js') $file .= '.js';
+			}
+			if (!in_array($file, $this->jsFiles)) $this->jsFiles[] = $file;
+		}
+	}
 	
 	// e.g. nodes/not-found/NotFound.php -> nodes\NotFound
 	protected function nodeClass() {
@@ -42,7 +75,7 @@ class Node {
 	}
 	
 	// e.g. nodes/not-found/NotFound.php -> not-found
-	protected function relNodePath() {
+	protected function webPath() {
 		return substr($this->nodePath(), 6);
 	}
 	
@@ -54,6 +87,10 @@ class Node {
 	
 	
 	
+	/*
+	 * Find and buffer the output of the given method on this node.
+	 * The method can return a config object containing bootstrap data, and/or an app file
+	 */
 	private function bufferMethod($method) {
 		if (!method_exists($this, $method) || !is_callable([$this, $method]) || method_exists('Node', $method)) Response::notFoundPage();
 		
@@ -64,11 +101,11 @@ class Node {
 		
 		if (is_string($config)) $config = ['app' => $config];
 		if (!is_array($config)) $config = [];
-		$config += ['js' => [], 'css' => []]; // put default config in there
 		
 		if (isset($config['app'])) {
-			$app = Core::join($this->relNodePath(), $config['app']);
-			$config['js'][] = $config['css'][] = $app;
+			$this->css($config['app']);
+			$this->js($config['app']);
+			$this->app($config['app']);
 		}
 		
 		$this->render($content ?: '', $config);
@@ -82,27 +119,27 @@ class Node {
 			<meta name="viewport" content="width=device-width,initial-scale=1">
 			<title><?= ucfirst($this->nodeName()) . ($this->method !== 'main' ? ' | ' . ucfirst($this->method) : '') ?></title>
 			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
-			<?= $this->styles($config['css']) ?>
+			<?= $this->styles() ?>
 			<script>window.blizzard = {user: {}}</script>
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/0.2.5/mithril.js"></script>
 			<script src="/js/lib/mithril-x.js"></script>
 		</head>
 		<body>
 			<?= trim($output) ?>
-			<?= $this->scripts($config['js']) ?>
+			<?= $this->scripts() ?>
 		</body>
 		</html>
 	<?php }
 	
-	private function scripts($jsFiles = []) {
+	private function scripts() {
 		return implode('', array_map(function($module) {
-			return '<script src="/js/' . $module . '.js"></script>';
-		}, $jsFiles));
+			return '<script src="' . $module . '"></script>';
+		}, $this->jsFiles));
 	}
 	
 	private function styles($cssFiles = []) {
 		return implode('', array_map(function($file) {
-			return '<link rel="stylesheet" href="/css/' . $file . '.css">';
-		}, $cssFiles));
+			return '<link rel="stylesheet" href="' . $file . '">';
+		}, $this->cssFiles));
 	}
 }

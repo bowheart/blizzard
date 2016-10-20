@@ -1,4 +1,4 @@
-m.define('app', ['core', 'layout', 'home', 'info', 'not-found'], function(core, layout, home, info, notFound) {
+m.define('guest-app', ['core', 'layout', 'home', 'info', 'not-found'], function(core, layout, home, info, notFound) {
 	var links = [
 		{text: 'Home', route: 'home'},
 		{text: 'Info for Moms', route: 'info'}

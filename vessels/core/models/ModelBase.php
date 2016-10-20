@@ -3,7 +3,7 @@
 namespace core\models;
 
 class ModelBase {
-	private $data = [];
+	protected $data = [];
 	
 	public function __call($key, $params) {
 		if (count($params)) {

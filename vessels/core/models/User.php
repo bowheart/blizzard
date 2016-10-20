@@ -3,7 +3,6 @@
 namespace core\models;
 
 use core\Session;
-use core\models\ModelBase;
 
 class User {
 	private static $user;
@@ -15,6 +14,11 @@ class User {
 	
 	
 	private static function current($user = null) {
+		if ($user) {
+			if (!($user instanceof UserModel)) $user = new UserModel($user);
+			static::$user = $user;
+			return $user;
+		}
 		if (!static::$user) $user = []; // if one hasn't been set, create an empty one (for guests)
 		
 		if (is_array($user)) {

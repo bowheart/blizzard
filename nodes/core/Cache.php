@@ -4,6 +4,8 @@ namespace nodes\core;
 
 use Core;
 use core\models\Node;
+use core\Request;
+use core\Response;
 use Leafo\ScssPhp\Compiler;
 
 class Cache extends Node {
@@ -31,25 +33,27 @@ class Cache extends Node {
 	 *   Map all modules defined in the same directory of a sass file to the resulting css file url (in $this->moduleMap)
 	 */
 	public function main() {
-		$this->css('core');
+		$render = !Core::is(Request::data('render'), [false, 'false']);
 		
 		$this->sassCompiler = new Compiler();
 		$this->sassCompiler->setFormatter('Leafo\\ScssPhp\\Formatter\\Crunched');
-		echo '<h4>Generating cache...</h4>';
+		if ($render) echo '<h3>Generating cache...</h3>';
 		
 		$this->createModuleMap();
 		$this->compileSass();
 		
 		$moduleMap = ['apps' => $this->apps, 'modules' => $this->moduleMap];
 		Core::writeFile(Core::join('resources', 'vessel-cache', 'module-map.json'), json_encode($moduleMap));
+		
+		if (!$render) Response::ok('Cache Successfully Generated.');
 		?>
-		<h2>Cache generated successfully.</h2>
+		<h3>Cache generated successfully.</h3>
 		<h4>Apps found: <?= count($this->apps) ?></h4>
-		<ul><li><?= implode('</li><li>', array_keys($this->apps)) ?></li></ul>
+		<ul class="styled"><li><?= implode('</li><li>', array_keys($this->apps)) ?></li></ul>
 		<h4>Modules found: <?= count($this->moduleMap) ?></h4>
-		<ul><li><?= implode('</li><li>', array_keys($this->moduleMap)) ?></li></ul>
+		<ul class="styled"><li><?= implode('</li><li>', array_keys($this->moduleMap)) ?></li></ul>
 		<h4>Sass files compiled: <?= count($this->toCompile) ?></h4>
-		<ul><li><?= implode('</li><li>', array_keys($this->toCompile)) ?></li></ul>
+		<ul class="styled"><li><?= implode('</li><li>', array_keys($this->toCompile)) ?></li></ul>
 		<?php
 	}
 	

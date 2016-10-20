@@ -36,6 +36,19 @@ class Core {
 		}
 	}
 	
+	public static function extension($str) {
+		if (strpos($str, '.') === false) return '';
+		return substr($str, strrpos($str, '.') + 1);
+	}
+	
+	public static function is($var, $list) {
+		if (is_string($list)) $list = explode(',', $list);
+		foreach ($list as $item) {
+			if ($var === $item) return true;
+		}
+		return false;
+	}
+	
 	public static function join() {
 		$paths = array();
 		foreach (func_get_args() as $arg) {

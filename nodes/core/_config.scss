@@ -1,7 +1,10 @@
-$colors: #89ffba #7afffd #f39dff;
-$text-colors: #ff9D30 #fe3083 #30fd83;
+$mid-colors: #4eceff #f39dff;
+$dark-colors: #b92fff darken(nth($mid-colors, 1), 25%) darken(nth($mid-colors, 2), 25%);
+$light-colors: #89ffba #7afffd;
 
-$greys: #333 #666 #999 #ccc #f2f2f2;
+$bg-colors: nth($dark-colors, 1) nth($mid-colors, 1) nth($mid-colors, 2);
+$button-colors: $bg-colors;
+$text-colors: $dark-colors;
 
 $fonts: 'Open Sans';
 

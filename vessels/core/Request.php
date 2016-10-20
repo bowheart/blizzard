@@ -45,6 +45,10 @@ class Request {
 		return static::$data;
 	}
 	
+	public static function last() {
+		return end(static::$nodes);
+	}
+	
 	public static function method() {
 		return static::$method;
 	}
@@ -55,6 +59,10 @@ class Request {
 	
 	public static function nodes() {
 		return static::$uriNodes;
+	}
+	
+	public static function peek() {
+		return reset(static::$nodes);
 	}
 	
 	public static function push($node) {

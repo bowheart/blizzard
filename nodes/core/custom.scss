@@ -1,9 +1,5 @@
 @import 'config';
 
-body {
-	background: #f3f3f3;
-}
-
 body > header {
 	height: $header-height;
 	text-align: center;
@@ -14,8 +10,7 @@ body > header {
 }
 
 body > nav {
-	border-top: 1px solid nth($colors, 2);
-	border-bottom: 1px solid nth($colors, 2);
+	background: nth($bg-colors, 1);
 	height: $nav-height;
 	text-align: center;
 	
@@ -30,6 +25,6 @@ body > main {
 }
 
 body > footer {
-	background: nth($colors, 2);
-	height: $footer-height;
+	background: nth($mid-colors, 1);
+	min-height: $footer-height;
 }

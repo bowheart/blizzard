@@ -118,6 +118,8 @@ class Node {
 			<meta charset="utf-8">
 			<meta name="viewport" content="width=device-width,initial-scale=1">
 			<title><?= ucfirst($this->nodeName()) . ($this->method !== 'main' ? ' | ' . ucfirst($this->method) : '') ?></title>
+			<link rel="stylesheet" href="/core/core.css">
+			<link rel="stylesheet" href="/core/custom.css">
 			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
 			<?= $this->styles() ?>
 			<script>window.blizzard = {user: {}}</script>
@@ -133,13 +135,13 @@ class Node {
 	
 	private function scripts() {
 		return implode('', array_map(function($module) {
-			return '<script src="' . $module . '"></script>';
+			return '<script src="/' . $module . '"></script>';
 		}, $this->jsFiles));
 	}
 	
 	private function styles($cssFiles = []) {
 		return implode('', array_map(function($file) {
-			return '<link rel="stylesheet" href="' . $file . '">';
+			return '<link rel="stylesheet" href="/' . $file . '">';
 		}, $this->cssFiles));
 	}
 }

@@ -3,13 +3,37 @@
 
 // Variables / Functions / Setup-type-stuff
 
-@mixin pseudo-effects($color) {
+@mixin input() {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	display: block;
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+	padding: 0.3rem 0.6rem;
+	width: 100%;
+	
+	&:focus {
+		border-color: #0ff;
+		box-shadow: 0 0 1px 1px #0ff;
+	}
+}
+
+@mixin pseudo-effects($bg, $color) {
 	&:hover, &:focus {
-		background: darken($color, 5%);
+		background: darken($bg, 5%);
+		color: $color;
 	}
 	&:active {
-		background: darken($color, 10%);
+		background: darken($bg, 10%);
+		color: $color;
 	}
+}
+
+@mixin standard-margins() {
+	margin-top: 1.4rem;
+	margin-bottom: 0.6rem;
 }
 
 
@@ -36,7 +60,7 @@ html {
 }
 
 body {
-	color: nth($greys, 1);
+	color: #333;
 	font-family: nth($fonts, 1);
 	font-size: 1.5rem;
 	margin: 0;
@@ -47,10 +71,12 @@ body {
 // Alphabetized selectors
 a {
 	color: nth($text-colors, 1);
+	cursor: pointer;
+	display: inline-block;
 	text-decoration: none;
 	
 	&:hover {
-		color: darken(nth($text-colors, 1), 10%);
+		color: darken(nth($text-colors, 1), 20%);
 	}
 }
 
@@ -58,66 +84,125 @@ article, figure, footer, header, main, section {
 	display: block;
 }
 
-button {
+button, .btn {
 	background: #fff;
-	border: 1px solid nth($greys, 4);
+	border: 1px solid #ccc;
+	color: currentColor;
 	cursor: pointer;
+	display: inline-block;
 	font-size: 1.5rem;
 	padding: 0.4em 0.7em;
-	@include pseudo-effects(#fff);
+	user-select: none; -moz-user-select: none; -ms-user-select: none; -webkit-user-select: none;
+	vertical-align: middle;
+	@include pseudo-effects(#fff, currentColor);
 	
-	@each $color in $colors {
-		$i: index($colors, $color);
+	@each $color in $button-colors {
+		$i: index($button-colors, $color);
 		
 		&.btn-#{$i} {
 			background: $color;
-			border: none;
+			border: 1px solid $color;
 			color: #fff;
-			@include pseudo-effects($color);
+			@include pseudo-effects($color, #fff);
 		}
 	}
-	
+}
+
+em, .em {
+	font-style: italic;
 }
 
 h1, h2, h3, h4, h5, h6 {
 	font-weight: 400;
-	margin-top: 0;
-	margin-bottom: 0;
+	line-height: 1;
 }
-h1 { font-size: 6rem; }
-h2 { font-size: 5.2rem; }
-h3 { font-size: 4.4rem; }
-h4 { font-size: 3.6rem; }
-h5 { font-size: 2.8rem; }
-h6 { font-size: 2rem; }
-
-input:not([type="radio"]):not([type="checkbox"]):not([type="submit"]):not([type="file"]) {
-	border: 1px solid #ddd;
-	border-radius: 2px;
-	font-size: 1.5rem;
-	padding: 0.3rem 0.6rem;
-	vertical-align: middle;
-	
-	&:focus {
-		border: 1px solid #3cf;
-		box-shadow: 0 0 3px #3cf, inset 0 0 1px #3cf;
+@for $i from 1 through 6 {
+	h#{$i} {
+		font-size: #{5.5 - ($i * 0.5)}rem;
+		
+		&:not(.padded):not(.bare) {
+			margin-top: #{4.8 - ($i * 0.3)}rem;
+			margin-bottom: #{3 - ($i * 0.3)}rem;
+		}
+		&.padded {
+			margin-top: 0;
+			margin-bottom: 0;
+			padding-top: #{3.4 - ($i * 0.3)}rem;
+			padding-bottom: #{3.4 - ($i * 0.3)}rem;
+		}
 	}
 }
 
-ol, ul {
+hr {
+	background: #ccc;
+	border: none;
+	height: 1px;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+	
+	&.fade {
+		background: linear-gradient(90deg, transparent, #ccc 30%, #ccc 70%, transparent);
+	}
+}
+
+input {
+	@include input();
+	
+	[type="date"], [type="email"], [type="number"], [type="password"], [type="tel"], [type="text"], [type="url"] {
+		@include input();
+	}
+}
+
+label.row {
+	cursor: pointer;
+	
+	&:not(.bare) {
+		padding-top: 0.7rem;
+		padding-bottom: 0.7rem;
+	}
+	> span, > input, > select {
+		margin-top: 0;
+		margin-bottom: 0;
+		vertical-align: middle;
+	}
+}
+
+ol {
 	list-style-position: inside;
-	margin-top: 0;
-	margin-bottom: 0;
-	padding-left: 0;
+	padding-left: 1.5rem;
+	@include standard-margins();
 }
 
 p {
-	margin-top: 0;
-	margin-bottom: 0;
+	&:not(.bare) {
+		@include standard-margins();
+	}
+}
+
+select {
+	cursor: pointer;
+	@include input();
+}
+
+strong, .strong {
+	font-weight: bold;
+}
+
+textarea {
+	resize: vertical;
+	@include input();
 }
 
 ul {
 	list-style-type: none;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-left: 0;
+	
+	&.styled {
+		list-style: circle inside;
+		padding-left: 1.5rem;
+	}
 }
 
 
@@ -153,7 +238,7 @@ ul {
 		margin-right: auto;
 		margin-left: auto;
 		max-width: 100%;
-		width: #{$i * 20}rem;
+		width: #{$i * ($i / 3) * 15}rem;
 	}
 	
 	
@@ -189,7 +274,7 @@ ul {
 	}
 	
 	.text-#{$i} {
-		font-size: 0.6rem * $i;
+		font-size: #{0.6 + (0.3 * $i)}rem;
 	}
 }
 
@@ -197,7 +282,9 @@ ul {
 
 // The Grid
 .row {
+	display: block;
 	letter-spacing: -1em;
+	width: 100%;
 	
 	> *:not(.row) {
 		letter-spacing: 0;
@@ -214,8 +301,12 @@ $oneTwentyFourth: 100 / 24;
 			@media (min-width: $mq + 1) {
 				display: inline-block;
 				vertical-align: top;
-				// width: $oneTwentyFourth * ($j + 0%;
 				width: #{$oneTwentyFourth * $j + 0%};
+			}
+		}
+		.col-push-#{$i}-#{$j} {
+			@media (min-width: $mq + 1) {
+				margin-left: #{$oneTwentyFourth * $j + 0%};
 			}
 		}
 	}
@@ -224,56 +315,74 @@ $oneTwentyFourth: 100 / 24;
 
 
 // Utility Classes
+@each $bg-color in $bg-colors {
+	$i: index($bg-colors, $bg-color);
+	
+	.bg-#{$i} {
+		background: $bg-color;
+		color: #fff;
+	}
+}
+
+@each $text-color in $text-colors {
+	$i: index($text-colors, $text-color);
+	
+	.color-#{$i} {
+		color: $text-color;
+	}
+}
+
 @each $mq in $mqs {
 	$i: index($mqs, $mq);
+	$mq: nth($mqs, length($mqs) - $i + 1);
 	
-	.size-#{$i} {
+	.screen-#{$i} {
 		@media (max-width: $mq) {
 			display: none;
 		}
 	}
 }
 
-@each $color in $colors {
-	$i: index($colors, $color);
-	
-	.bg-#{$i} {
-		background: $color;
-		color: #fff;
-	}
-	.color-#{$i} {
-		color: $color;
-	}
+.block {
+	display: block;
+	width: 100%;
+}
+.block-center {
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
 }
 
-@each $grey in $greys {
-	$i: index($greys, $grey);
-	
-	.bg-grey-#{$i} {
-		background: $grey;
-	}
-	.text-#{$i} {
-		color: $grey;
-	}
+.border {
+	border: 1px solid #ccc;
+}
+.border-col {
+	border-right: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+}
+.border-row {
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+}
+.border-top {
+	border-top: 1px solid #ccc;
+}
+.border-right {
+	border-right: 1px solid #ccc;
+}
+.border-bottom {
+	border-bottom: 1px solid #ccc;
+}
+.border-left {
+	border-left: 1px solid #ccc;
+}
+
+.flex-page {
+	display: flex;
 }
 
 .inline {
 	display: inline-block;
-}
-
-.input {
-	display: block;
-	width: 100%;
-}
-
-.input-group {
-	padding-top: 0.5rem;
-	padding-bottom: 0.5rem;
-	text-align: right;
-	
-	> label, > input {
-		vertical-align: middle;
-	}
 }
 
 .list-inline {
@@ -291,7 +400,7 @@ $oneTwentyFourth: 100 / 24;
 	width: 100%;
 	
 	&::before {
-		background: rgba(0, 0, 0, 0.3);
+		background: rgba(0, 0, 0, 0.2);
 		content: '';
 		position: absolute;
 		top: -100%;
@@ -329,7 +438,7 @@ $oneTwentyFourth: 100 / 24;
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 
-.v-align {
+.middle {
 	vertical-align: middle;
 	
 	~ * {
@@ -337,10 +446,14 @@ $oneTwentyFourth: 100 / 24;
 	}
 }
 
-.v-align-content {
+.content-middle {
 	> * {
-		display: inline-block;
 		vertical-align: middle;
+	}
+	&:not(.row) {
+		> * {
+			display: inline-block;
+		}
 	}
 	
 	&::after {

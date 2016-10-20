@@ -32,7 +32,8 @@ class Response {
 		die();
 	}
 	
-	public static function ok() {
+	public static function ok($text = '') {
+		if ($text) echo $text;
 		http_response_code(200);
 		die();
 	}
@@ -53,10 +54,5 @@ class Response {
 		echo '<h2>' . $title . '</h2>';
 		print_r($data);
 		die();
-	}
-	
-	public static function text($text = '') {
-		echo $text;
-		static::ok();
 	}
 }

@@ -2,23 +2,24 @@ m.define('home', 'core', function(core) {
 	return {
 		view: function() {
 			return ('', [
-				m('.container-7', [
-					m('.row', [
-						m('.col-3-9.pad-row-4.pad-col-2', [
-							m('.box', [
+				m('.container-6.pad-row-4', [
+					m('.row.row-flex.text-center', [
+						m('.col-3-8.pad-col-2', [
+							m('.border.pad-2', [
 								m('h5', 'Salem, UT Village'),
-								m('p', '(Support Group)')
+								m('p.text-left', '(Support Group)')
 							])
 						]),
-						m('.col-3-6.pad-row-4.pad-col-2', [
-							m('.box', [
-								m('h5', 'Events & Guest Presenters')
+						m('.col-3-7.pad-col-2', [
+							m('.border.pad-2', [
+								m('h5', 'Events & Guest Presenters'),
+								m('p.text-left', '')
 							])
 						]),
-						m('.col-3-9.pad-row-4.pad-col-2', [
-							m('.box', [
+						m('.col-3-8.pad-col-2', [
+							m('.border.pad-2', [
 								m('h5', 'Zoom Village'),
-								m('p', '(Online Support Group)')
+								m('p.text-left', '(Online Support Group)')
 							])
 						])
 					]),

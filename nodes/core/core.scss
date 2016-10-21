@@ -298,6 +298,9 @@ $oneTwentyFourth: 100 / 24;
 	
 	@for $j from 24 through 1 {
 		.col-#{$i}-#{$j} {
+			display: block;
+			width: 100%;
+			
 			@media (min-width: $mq + 1) {
 				display: inline-block;
 				vertical-align: top;
@@ -314,6 +317,27 @@ $oneTwentyFourth: 100 / 24;
 
 
 
+// Flex
+.row-flex {
+	display: flex;
+	flex-flow: row wrap;
+	
+	&.text-center {
+		justify-content: center;
+	}
+	
+	> * {
+		display: flex;
+		flex-flow: column nowrap;
+		
+		> * {
+			flex: 1;
+		}
+	}
+}
+
+
+
 // Utility Classes
 @each $bg-color in $bg-colors {
 	$i: index($bg-colors, $bg-color);
@@ -321,6 +345,15 @@ $oneTwentyFourth: 100 / 24;
 	.bg-#{$i} {
 		background: $bg-color;
 		color: #fff;
+		
+		a {
+			color: #fff;
+			
+			&:hover {
+				color: #fff;
+				text-decoration: underline;
+			}
+		}
 	}
 }
 
@@ -377,8 +410,22 @@ $oneTwentyFourth: 100 / 24;
 	border-left: 1px solid #ccc;
 }
 
-.flex-page {
-	display: flex;
+.content-middle {
+	> * {
+		vertical-align: middle;
+	}
+	&:not(.row) {
+		> * {
+			display: inline-block;
+		}
+	}
+
+	&::after {
+		content: '';
+		display: inline-block;
+		vertical-align: middle;
+		height: 100%;
+	}
 }
 
 .inline {
@@ -388,6 +435,14 @@ $oneTwentyFourth: 100 / 24;
 .list-inline {
 	> li {
 		display: inline-block;
+	}
+}
+
+.middle {
+	vertical-align: middle;
+
+	~ * {
+		vertical-align: middle;
 	}
 }
 
@@ -437,29 +492,3 @@ $oneTwentyFourth: 100 / 24;
 .text-left { text-align: left; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }
-
-.middle {
-	vertical-align: middle;
-	
-	~ * {
-		vertical-align: middle;
-	}
-}
-
-.content-middle {
-	> * {
-		vertical-align: middle;
-	}
-	&:not(.row) {
-		> * {
-			display: inline-block;
-		}
-	}
-	
-	&::after {
-		content: '';
-		display: inline-block;
-		vertical-align: middle;
-		height: 100%;
-	}
-}

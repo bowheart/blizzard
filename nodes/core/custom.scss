@@ -10,9 +10,7 @@ body > header {
 }
 
 body > nav {
-	background: nth($bg-colors, 1);
 	height: $nav-height;
-	text-align: center;
 	
 	a {
 		line-height: $nav-height;

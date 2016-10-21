@@ -6,6 +6,6 @@ use core\models\Node;
 
 class Home extends Node {
 	public function main() {
-		$this->app('app');
+		$this->app('guest-app');
 	}
 }

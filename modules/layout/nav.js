@@ -4,7 +4,7 @@ m.define('layout.nav', 'core', function(core) {
 			
 		},
 		view: function(ctrl, links) {
-			return m('nav.v-align-content', [
+			return m('nav.bg-1.text-center', [
 				m('ul.list-inline',
 					links.map(function(link) {
 						return m('li', [

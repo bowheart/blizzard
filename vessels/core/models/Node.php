@@ -9,6 +9,7 @@ use core\Response;
 
 class Node {
 	private $method;
+	private $moduleMap = [];
 	private $cssFiles = [];
 	private $jsFiles = [];
 
@@ -28,10 +29,14 @@ class Node {
 	
 	protected function app($file) {
 		$file = ($file[0] === '/' ? substr($file, 1) : Core::join($this->webPath(), $file));
+		if (Core::extension($file) !== 'js') $file .= '.js';
 		
-		$moduleMap = file_get_contents(Core::join('resources', 'vessel-cache', 'module-map.json'));
-		$app = $moduleMap['apps'][$file];
-		print_r($app);
+		$moduleMap = Core::parseJsonFile(Core::join('resources', 'vessel-cache', 'module-map.json'));
+		$appDeps = $moduleMap['apps'][$file];
+		if (!in_array($file, $this->jsFiles)) $this->jsFiles[] = $file;
+		
+		$this->moduleMap = $moduleMap;
+		$this->loadModule($appDeps);
 	}
 	
 	protected function css() {
@@ -109,6 +114,17 @@ class Node {
 		}
 		
 		$this->render($content ?: '', $config);
+	}
+	
+	private function loadModule($deps) {
+		foreach ($deps as $dep) {
+			$module = $this->moduleMap['modules'][$dep];
+			if (!$module) continue; // module not found
+			
+			$this->loadModule($module['deps']);
+			$file = $module['file'];
+			if (!in_array($file, $this->jsFiles)) $this->jsFiles[] = $file;
+		}
 	}
 	
 	private function render($output, $config) { ?>

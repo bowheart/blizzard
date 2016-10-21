@@ -11,7 +11,7 @@ class Sandbox extends Node {
 		<header class="pad-row-6 bg-2 text-5 text-center">
 			This is the header!
 		</header>
-		<main class="row flex-page">
+		<main class="row row-flex">
 			<nav class="col-2-4 pad-row-8 text-center bg-1">
 				I am the menu
 			</nav>
@@ -67,6 +67,11 @@ class Sandbox extends Node {
 					<a class="btn btn-4">a.btn.btn-4</a>
 					<button class="btn-5">.btn-5</button>
 					<a class="btn btn-6">a.btn.btn-6</a>
+					<div class="row">
+						<button class="col-1-8"><i class="fa fa-rocket"></i></button>
+						<button class="col-1-8"><i class="fa fa-pencil"></i></button>
+						<button class="col-1-8"><i class="fa fa-plane"></i></button>
+					</div>
 					<button class="block push-top-3 pad-row-3">I am a fat button (.block)</button>
 				</section>
 				<section class="pad-col-3">
@@ -103,6 +108,7 @@ class Sandbox extends Node {
 				</section>
 				<section class="pad-col-3">
 					<h3>The Grid:</h3>
+					<h4>Normal:</h4>
 					<div class="container-6 text-center">
 						<div class="row pad-row-2">
 							<div class="col-1-24">column</div>
@@ -179,6 +185,85 @@ class Sandbox extends Node {
 							<div class="col-8-1">column</div>
 							<div class="col-8-1">column</div>
 							<div class="col-8-1">column</div>
+						</div>
+					</div>
+					<h4>Flex:</h4>
+					<div class="container-6 text-center">
+						<div class="row row-flex pad-row-2">
+							<div class="col-1-24 bg-1 pad-row-3"></div>
+						</div>
+						<div class="row row-flex pad-row-2">
+							<div class="col-2-12"><div class="push-right-2 border pad-2">I am a column with lots of text Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div></div>
+							<div class="col-2-12"><div class="push-left-2 border pad-2">I am not</div></div>
+						</div>
+						<div class="row row-flex pad-row-2">
+							<div class="col-3-8 bg-1 pad-row-3"></div>
+							<div class="col-3-8 bg-2 pad-row-3"></div>
+							<div class="col-3-8 bg-3 pad-row-3"></div>
+						</div>
+						<div class="row row-flex pad-row-2">
+							<div class="col-4-6 bg-1 pad-row-3">I am a column with lots of text Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+							<div class="col-4-6 bg-2 pad-row-3"></div>
+							<div class="col-4-6 bg-3 pad-row-3"></div>
+							<div class="col-4-6 bg-1 pad-row-3"></div>
+						</div>
+						<div class="row row-flex pad-row-2">
+							<div class="col-5-4 bg-1 pad-row-3"></div>
+							<div class="col-5-4 bg-2 pad-row-3"></div>
+							<div class="col-5-4 bg-3 pad-row-3"></div>
+							<div class="col-5-4 bg-1 pad-row-3"></div>
+							<div class="col-5-4 bg-2 pad-row-3"></div>
+							<div class="col-5-4 bg-3 pad-row-3"></div>
+						</div>
+						<div class="row row-flex pad-row-2">
+							<div class="col-6-3 bg-1 pad-row-3">I am a column with lots of text Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+							<div class="col-6-3 bg-2 pad-row-3"></div>
+							<div class="col-6-3 bg-3 pad-row-3"></div>
+							<div class="col-6-3 bg-1 pad-row-3"></div>
+							<div class="col-6-3 bg-2 pad-row-3"></div>
+							<div class="col-6-3 bg-3 pad-row-3"></div>
+							<div class="col-6-3 bg-1 pad-row-3"></div>
+							<div class="col-6-3 bg-2 pad-row-3"></div>
+						</div>
+						<div class="row row-flex pad-row-2">
+							<div class="col-7-2 bg-1 pad-row-3"></div>
+							<div class="col-7-2 bg-2 pad-row-3"></div>
+							<div class="col-7-2 bg-3 pad-row-3"></div>
+							<div class="col-7-2 bg-1 pad-row-3"></div>
+							<div class="col-7-2 bg-2 pad-row-3"></div>
+							<div class="col-7-2 bg-3 pad-row-3"></div>
+							<div class="col-7-2 bg-1 pad-row-3"></div>
+							<div class="col-7-2 bg-2 pad-row-3"></div>
+							<div class="col-7-2 bg-3 pad-row-3"></div>
+							<div class="col-7-2 bg-1 pad-row-3"></div>
+							<div class="col-7-2 bg-2 pad-row-3"></div>
+							<div class="col-7-2 bg-3 pad-row-3"></div>
+						</div>
+						<div class="row row-flex pad-row-2">
+							<div class="col-8-1 bg-1 pad-row-3">I am a column with lots of text Lorem ipsum dolor sit amet, consectetur adipisicing elit</div>
+							<div class="col-8-1 bg-2 pad-row-3"></div>
+							<div class="col-8-1 bg-3 pad-row-3"></div>
+							<div class="col-8-1 bg-1 pad-row-3"></div>
+							<div class="col-8-1 bg-2 pad-row-3"></div>
+							<div class="col-8-1 bg-3 pad-row-3"></div>
+							<div class="col-8-1 bg-1 pad-row-3"></div>
+							<div class="col-8-1 bg-2 pad-row-3"></div>
+							<div class="col-8-1 bg-3 pad-row-3"></div>
+							<div class="col-8-1 bg-1 pad-row-3"></div>
+							<div class="col-8-1 bg-2 pad-row-3"></div>
+							<div class="col-8-1 bg-3 pad-row-3"></div>
+							<div class="col-8-1 bg-1 pad-row-3"></div>
+							<div class="col-8-1 bg-2 pad-row-3"></div>
+							<div class="col-8-1 bg-3 pad-row-3"></div>
+							<div class="col-8-1 bg-1 pad-row-3"></div>
+							<div class="col-8-1 bg-2 pad-row-3"></div>
+							<div class="col-8-1 bg-3 pad-row-3"></div>
+							<div class="col-8-1 bg-1 pad-row-3"></div>
+							<div class="col-8-1 bg-2 pad-row-3"></div>
+							<div class="col-8-1 bg-3 pad-row-3"></div>
+							<div class="col-8-1 bg-1 pad-row-3"></div>
+							<div class="col-8-1 bg-2 pad-row-3"></div>
+							<div class="col-8-1 bg-3 pad-row-3"></div>
 						</div>
 					</div>
 				</section>
